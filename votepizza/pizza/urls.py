@@ -14,7 +14,7 @@ urlpatterns = [
         name='pizza-detail'),
     url(r'^pizza/(?P<pk>\d+)/vote/$', views.VoteDetailView.as_view(),
         name='pizza-vote'),
-    url(r'^pizza/(?P<pk>\d+)/(?P<topping_pk>\d+)/$',
+    url(r'^pizza/(?P<pk>\d+)/(?P<topping_id>\d+)/$',
         views.ToppingsInPizzaDetailView.as_view(),
         name='toppings-in-pizza'),
     url(r'^toppings/$',

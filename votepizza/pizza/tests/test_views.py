@@ -259,7 +259,7 @@ class RemoveToppingFromPizzaTest(TestCase):
         response = client.delete(
             reverse('pizza:toppings-in-pizza',
                     kwargs={'pk': self.neapolitana.id,
-                            'topping_pk': self.rukkola.id}),
+                            'topping_id': self.rukkola.id}),
             content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
@@ -267,7 +267,7 @@ class RemoveToppingFromPizzaTest(TestCase):
         client.delete(
             reverse('pizza:toppings-in-pizza',
                     kwargs={'pk': self.neapolitana.id,
-                            'topping_pk': self.rukkola.id}),
+                            'topping_id': self.rukkola.id}),
             content_type='application/json')
         self.assertFalse(self.rukkola in self.neapolitana.toppings.all())
 
@@ -275,6 +275,6 @@ class RemoveToppingFromPizzaTest(TestCase):
         client.delete(
             reverse('pizza:toppings-in-pizza',
                     kwargs={'pk': self.neapolitana.id,
-                            'topping_pk': self.rukkola.id}),
+                            'topping_id': self.rukkola.id}),
             content_type='application/json')
         self.assertTrue(self.rukkola in Topping.objects.all())

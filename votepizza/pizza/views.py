@@ -90,9 +90,9 @@ class VoteDetailView(APIView):
 
 
 class ToppingsInPizzaDetailView(APIView):
-    def get(self, request, pk, topping_pk, format=None):
+    def get(self, request, pk, topping_id, format=None):
         pizza = get_object_or_404(Pizza, pk=pk)
-        topping = get_object_or_404(Topping, pk=topping_pk)
+        topping = get_object_or_404(Topping, pk=topping_id)
         if topping in pizza.toppings.all():
             serializer_context = {
                 'request': request
@@ -103,8 +103,8 @@ class ToppingsInPizzaDetailView(APIView):
         else:
             raise Http404
 
-    def delete(self, request, pk, topping_pk, format=None):
-        topping = get_object_or_404(Topping, pk=topping_pk)
+    def delete(self, request, pk, topping_id, format=None):
+        topping = get_object_or_404(Topping, pk=topping_id)
         pizza = get_object_or_404(Pizza, pk=pk)
         pizza.toppings.remove(topping)
         return Response(status=status.HTTP_204_NO_CONTENT)

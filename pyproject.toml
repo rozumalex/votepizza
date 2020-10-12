@@ -15,6 +15,7 @@ django-environ = "^0.4.5"
 psycopg2 = "^2.8.6"
 pytest-django = "^3.10.0"
 pytest-cov = "^2.10.1"
+django-rest-swagger = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
 

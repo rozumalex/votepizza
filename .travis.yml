@@ -29,3 +29,6 @@ env:
 script:
   - flake8
   - pytest --cov
+
+after_success:
+  - codecov
