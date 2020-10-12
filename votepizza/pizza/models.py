@@ -13,7 +13,7 @@ class Pizza(models.Model):
     name = models.CharField(max_length=255, unique=True)
     price = models.DecimalField(max_digits=5, decimal_places=2,
                                 validators=[MinValueValidator(0)])
-    toppings = models.ManyToManyField(Topping, through="Structure")
+    toppings = models.ManyToManyField(Topping)
     votes = models.IntegerField(default=0)
 
     def count_toppings(self):
@@ -21,8 +21,3 @@ class Pizza(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class Structure(models.Model):
-    pizza = models.ForeignKey(Pizza, on_delete=models.CASCADE)
-    topping = models.ForeignKey(Topping, on_delete=models.CASCADE)

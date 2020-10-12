@@ -33,7 +33,6 @@ sudo -u postgres psql
 CREATE DATABASE votepizza_db;
 CREATE USER votepizza_user with encrypted password 'votepizza_pass';
 GRANT ALL PRIVILEGES ON DATABASE votepizza_db TO votepizza_user;
-ALTER USER votepizza_user createdb;
 ```
 ***Note:*** then press Ctrl+D
 

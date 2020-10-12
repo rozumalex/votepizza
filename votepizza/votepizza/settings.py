@@ -56,7 +56,7 @@ REST_FRAMEWORK = {
         'rest_framework.renders.BrowsableApiRender'
     ],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
 TEMPLATES = [
