@@ -27,6 +27,5 @@ env:
     - DATABASE_URL=psql://votepizza_user:votepizza_pass@127.0.0.1:5432/votepizza_db
 
 script:
-  - python manage.py test
   - flake8
-  - pytest
+  - pytest --cov
