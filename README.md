@@ -38,7 +38,7 @@ GRANT ALL PRIVILEGES ON DATABASE votepizza_db TO votepizza_user;
 
 ### Create .env file
 ```
-cd printacc
+cd votepizza
 nano .env
 ```
 
