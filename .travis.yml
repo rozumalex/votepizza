@@ -1,0 +1,31 @@
+language: python
+
+dist: bionic
+
+python:
+  - "3.8"
+
+install:
+  - pip install poetry
+  - poetry install
+
+services:
+  - postgresql
+
+before_script:
+  - cd votepizza
+  - psql -c "CREATE DATABASE votepizza_db;" -U postgres
+  - psql -c "CREATE USER votepizza_user with encrypted password 'votepizza_pass';" -U postgres
+  - psql -c "GRANT ALL PRIVILEGES ON DATABASE votepizza_db TO votepizza_user;" -U postgres
+  - psql -c "ALTER USER votepizza_user createdb;" -U postgres
+  - python manage.py migrate --noinput
+
+env:
+  global:
+    - DEBUG=True
+    - SECRET_KEY="dev"
+    - DATABASE_URL=psql://votepizza_user:votepizza_pass@127.0.0.1:5432/votepizza_db
+
+script:
+  - python manage.py test
+  - flake8
