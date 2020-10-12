@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 import json
 
-from ..models import Pizza
+from ..models import Pizza, Topping
 from ..serializers import PizzaSerializer
 
 
@@ -51,57 +51,20 @@ class CreateNewPizzaTest(TestCase):
         self.valid_data = {
             'name': 'Margherita',
             'price': 3.99,
-            'toppings': [
-                {'name': 'tomatoes'},
-                {'name': 'cheese'}
-            ]
-        }
-        self.valid_data_no_toppings = {
-            'name': 'Margherita',
-            'price': 3.99,
-            'toppings': []
         }
         self.invalid_name_data = {
             'name': '',
-            'price': 3.99,
-            'toppings': [
-                {'name': 'tomatoes'},
-                {'name': 'cheese'}
-            ]
+            'price': 3.99
         }
         self.invalid_price_data = {
             'name': 'Pepperoni',
-            'price': -3.99,
-            'toppings': [
-                {'name': 'tomatoes'},
-                {'name': 'cheese'}
-            ]
-        }
-        self.invalid_data_no_toppings = {
-            'name': 'Pepperoni',
-            'price': 3.99
-        }
-        self.invalid_topping_data = {
-            'name': 'Pepperoni',
-            'price': 3.99,
-            'toppings': [
-                {'name': 'tomatoes'},
-                {'id': 1}
-            ]
+            'price': -3.99
         }
 
     def test_create_valid_pizza(self):
         response = client.post(
             reverse('pizza:pizza-list'),
             data=json.dumps(self.valid_data),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    def test_create_valid_pizza_no_toppings(self):
-        response = client.post(
-            reverse('pizza:pizza-list'),
-            data=json.dumps(self.valid_data_no_toppings),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -122,22 +85,6 @@ class CreateNewPizzaTest(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_invalid_data_no_toppings(self):
-        response = client.post(
-            reverse('pizza:pizza-list'),
-            data=json.dumps(self.invalid_data_no_toppings),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_invalid_topping_data(self):
-        response = client.post(
-            reverse('pizza:pizza-list'),
-            data=json.dumps(self.invalid_topping_data),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
 
 class UpdateSinglePizzaTest(TestCase):
     def setUp(self):
@@ -154,12 +101,6 @@ class UpdateSinglePizzaTest(TestCase):
         }
         self.invalid_price_data = {
             'price': ''
-        }
-        self.valid_toppings_data = {
-            'toppings': [{'name': 'basil'}]
-        }
-        self.invalid_toppings_data = {
-            'toppings': [{'id': 5}]
         }
 
     def test_valid_name_update_pizza(self):
@@ -189,21 +130,6 @@ class UpdateSinglePizzaTest(TestCase):
         response = client.patch(
             reverse('pizza:pizza-detail', kwargs={'pk': self.hawaiian.pk}),
             data=json.dumps(self.invalid_price_data),
-            content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_valid_toppings_update_pizza(self):
-        response = client.patch(
-            reverse('pizza:pizza-detail', kwargs={'pk': self.hawaiian.pk}),
-            data=json.dumps(self.valid_toppings_data),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_invalid_toppings_update_pizza(self):
-        response = client.patch(
-            reverse('pizza:pizza-detail', kwargs={'pk': self.hawaiian.pk}),
-            data=json.dumps(self.invalid_toppings_data),
             content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -250,3 +176,105 @@ class VoteForPizzaTest(TestCase):
         )
         self.assertEqual(response.status_code,
                          status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class CreateNewToppingTest(TestCase):
+    def setUp(self):
+        self.valid_data = {
+            'name': 'sausages'
+        }
+        self.invalid_name_data = {
+            'name': ''
+        }
+
+    def test_create_valid_topping(self):
+        response = client.post(
+            reverse('pizza:toppings-list'),
+            data=json.dumps(self.valid_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_invalid_name_topping(self):
+        response = client.post(
+            reverse('pizza:toppings-list'),
+            data=json.dumps(self.invalid_name_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteSingleToppingTest(TestCase):
+    def setUp(self):
+        self.sausage = Topping.objects.create(name='sausage')
+
+    def test_valid_delete_topping(self):
+        response = client.delete(
+            reverse('pizza:toppings-detail', kwargs={'pk': self.sausage.pk}))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_invalid_delete_topping(self):
+        response = client.delete(
+            reverse('pizza:toppings-detail', kwargs={'pk': 46}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class AddToppingToPizzaTest(TestCase):
+    def setUp(self):
+        self.neapolitana = Pizza.objects.create(name='Neapolitana',
+                                                price=12)
+        self.valid_data = {
+            'name': 'sausages'
+        }
+        self.invalid_data = {
+            'age': 15
+        }
+
+    def test_valid_adding_topping_to_pizza(self):
+        response = client.post(
+            reverse('pizza:pizza-detail', kwargs={'pk': self.neapolitana.pk}),
+            data=json.dumps(self.valid_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_invalid_adding_topping_to_pizza(self):
+        response = client.post(
+            reverse('pizza:pizza-detail', kwargs={'pk': self.neapolitana.pk}),
+            data=json.dumps(self.invalid_data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class RemoveToppingFromPizzaTest(TestCase):
+    def setUp(self):
+        self.neapolitana = Pizza.objects.create(name='Neapolitana',
+                                                price=12)
+        self.meat = Topping.objects.create(name='meat')
+        self.rukkola = Topping.objects.create(name='rukkola')
+        self.neapolitana.toppings.add(self.meat, self.rukkola)
+
+    def test_valid_removing_topping_from_pizza(self):
+        response = client.delete(
+            reverse('pizza:toppings-in-pizza',
+                    kwargs={'pk': self.neapolitana.id,
+                            'topping_pk': self.rukkola.id}),
+            content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_valid_removing_topping_from_pizza_2(self):
+        client.delete(
+            reverse('pizza:toppings-in-pizza',
+                    kwargs={'pk': self.neapolitana.id,
+                            'topping_pk': self.rukkola.id}),
+            content_type='application/json')
+        self.assertFalse(self.rukkola in self.neapolitana.toppings.all())
+
+    def test_valid_removing_topping_from_pizza_3(self):
+        client.delete(
+            reverse('pizza:toppings-in-pizza',
+                    kwargs={'pk': self.neapolitana.id,
+                            'topping_pk': self.rukkola.id}),
+            content_type='application/json')
+        self.assertTrue(self.rukkola in Topping.objects.all())

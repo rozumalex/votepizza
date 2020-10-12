@@ -15,6 +15,6 @@ class PizzaModelTest(TestCase):
 
         self.assertEqual(pizza_pepperoni.count_toppings(), 1)
 
-    def test_pizza(self):
+    def test_get_pizza(self):
         pizza_pepperoni = Pizza.objects.get(name='Pepperoni')
         self.assertEqual(pizza_pepperoni.name, 'Pepperoni')
