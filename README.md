@@ -1,6 +1,6 @@
 # votepizza
 
-[![Build Status](https://travis-ci.com/rozumalex/votepizza.svg?token=eyTj5NQsqxwFx65RvxhG&branch=main)](https://travis-ci.org/github/rozumalex/votepizza)
+[![Build Status](https://travis-ci.com/rozumalex/votepizza.svg?branch=main)](https://travis-ci.org/github/rozumalex/votepizza)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/rozumalex/votepizza/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/rozumalex/votepizza/branch/main/graph/badge.svg)](https://codecov.io/gh/rozumalex/votepizza)
 
@@ -38,7 +38,7 @@ GRANT ALL PRIVILEGES ON DATABASE votepizza_db TO votepizza_user;
 
 ### Create .env file
 ```
-cd printacc
+cd votepizza
 nano .env
 ```
 
