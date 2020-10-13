@@ -15,10 +15,12 @@ class ToppingsSerializer(serializers.ModelSerializer):
 
 
 class ToppingsNoUrlSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Topping
-        fields = ('id', 'name',)
+        fields = ('name',)
+        extra_kwargs = {
+            'name': {'validators': []},
+        }
 
 
 class PizzaSerializer(serializers.ModelSerializer):
@@ -67,8 +69,6 @@ class PizzaSerializer(serializers.ModelSerializer):
                     except Exception:
                         raise ValidationError
                 instance.toppings.add(topping)
-        else:
-            toppings_data = False
 
         instance.name = validated_data.get('name', instance.name)
         instance.price = validated_data.get('price', instance.price)
