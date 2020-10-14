@@ -1,8 +1,8 @@
 from rest_framework import generics
 from rest_framework.views import APIView
 
-from django.http.response import HttpResponseRedirect, HttpResponseNotAllowed
-from rest_framework.reverse import reverse, reverse_lazy
+from django.http.response import HttpResponseNotAllowed
+from rest_framework.reverse import reverse
 from rest_framework.response import Response
 import datetime
 from rest_framework import status
@@ -47,17 +47,17 @@ class VoteForPizzaView(PatchOnlyMixin, UpdateModelMixin,
     def patch(self, request, *args, **kwargs):
         pizza = self.get_object()
         if request.COOKIES.get('voted', None):
-            return Response({'error': 'You have already voted'}, status=400)
-        pizza.votes += 1
-        pizza.save()
-        response = HttpResponseRedirect(reverse_lazy('pizza:pizza-detail',
-                                        args=[pizza.id]))
-        expires = datetime.datetime.strftime(
-            datetime.datetime.utcnow() + datetime.timedelta(seconds=15),
-            '%a, %d-%b-%Y %H:%M:%S GMT')
-        response.set_cookie(key='voted', value=True,
-                            max_age=15, expires=expires)
-        response['status'] = status.HTTP_200_OK
+            return Response({'error': 'You have already voted'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            pizza.votes += 1
+            pizza.save()
+            response = Response({'votes': pizza.votes})
+            expires = datetime.datetime.strftime(
+                datetime.datetime.utcnow() + datetime.timedelta(seconds=15),
+                '%a, %d-%b-%Y %H:%M:%S GMT')
+            response.set_cookie(key='voted', value=True,
+                                max_age=15, expires=expires)
         return response
 
     def update(self, request, *args, **kwargs):

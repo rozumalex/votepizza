@@ -235,7 +235,7 @@ class VoteForPizzaTest(TestCase):
             reverse('pizza:pizza-vote', kwargs={'pk': self.hawaiian.pk}),
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_invalid_post_vote_for_pizza(self):
         response = client.post(
