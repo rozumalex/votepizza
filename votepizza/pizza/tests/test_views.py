@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 import json
 
-from ..models import Pizza
+from ..models import Pizza, Topping
 from ..serializers import PizzaSerializer
 
 
@@ -12,10 +12,14 @@ client = Client()
 
 class PizzaListViewTest(TestCase):
     def setUp(self):
-        Pizza.objects.create(name='Pepperoni', price='3.99')
-        Pizza.objects.create(name='Margherita', price='4.50')
+        cheese = Topping.objects.create(name='cheese')
+        chicken = Topping.objects.create(name='chicken')
+        pepperoni = Pizza.objects.create(name='Pepperoni', price='3.99')
+        margherita = Pizza.objects.create(name='Margherita', price='4.50')
         Pizza.objects.create(name='Four Seas', price='5')
         Pizza.objects.create(name='Hawaiian', price='12')
+        pepperoni.toppings.set([cheese, chicken])
+        margherita.toppings.add(chicken)
 
     def test_get_all_pizza(self):
         response = client.get(reverse('pizza:pizza-list'))
@@ -53,21 +57,19 @@ class PizzaDetailViewTest(TestCase):
 
 class CreateNewPizzaTest(TestCase):
     def setUp(self):
+        Topping.objects.create(name='cheese')
+        Topping.objects.create(name='chicken')
+
         self.valid_data = {
             'name': 'Margherita',
             'price': 3.99,
             'toppings': [
-                {'name': 'tomatoes'},
-                {'name': 'cheese'}
+                {'id': Topping.objects.get(name='cheese').id},
+                {'id': Topping.objects.get(name='chicken').id}
             ]
         }
-        self.valid_data_no_toppings = {
+        self.invalid_data_no_toppings = {
             'name': 'Margherita',
-            'price': 3.99,
-            'toppings': []
-        }
-        self.valid_data_no_toppings_2 = {
-            'name': 'Pepperoni',
             'price': 3.99
         }
         self.invalid_name_data = {
@@ -103,21 +105,13 @@ class CreateNewPizzaTest(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_valid_pizza_no_toppings(self):
+    def test_create_invalid_pizza_no_toppings(self):
         response = client.post(
             reverse('pizza:pizza-list'),
-            data=json.dumps(self.valid_data_no_toppings),
+            data=json.dumps(self.invalid_data_no_toppings),
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    def test_create_valid_data_no_toppings_2(self):
-        response = client.post(
-            reverse('pizza:pizza-list'),
-            data=json.dumps(self.valid_data_no_toppings_2),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_invalid_name_pizza(self):
         response = client.post(
@@ -147,6 +141,8 @@ class CreateNewPizzaTest(TestCase):
 class UpdateSinglePizzaTest(TestCase):
     def setUp(self):
         self.hawaiian = Pizza.objects.create(name='Hawaiian', price='4.99')
+        Topping.objects.create(name='cheese')
+        Topping.objects.create(name='chicken')
 
         self.valid_name_data = {
             'name': 'Hawaii'
@@ -160,11 +156,12 @@ class UpdateSinglePizzaTest(TestCase):
         self.invalid_price_data = {
             'price': ''
         }
-        self.valid_toppings_data = {
+        self.invalid_toppings_data = {
             'toppings': [{'name': 'basil'}]
         }
-        self.invalid_toppings_data = {
-            'toppings': [{'id': 5}]
+        self.valid_toppings_data = {
+            'toppings': [{'id': Topping.objects.get(name='cheese').id},
+                         {'id': Topping.objects.get(name='chicken').id}]
         }
 
     def test_valid_name_update_pizza(self):
@@ -238,7 +235,7 @@ class VoteForPizzaTest(TestCase):
             reverse('pizza:pizza-vote', kwargs={'pk': self.hawaiian.pk}),
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
 
     def test_invalid_post_vote_for_pizza(self):
         response = client.post(

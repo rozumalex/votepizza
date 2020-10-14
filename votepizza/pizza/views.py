@@ -1,14 +1,14 @@
-from django.shortcuts import get_object_or_404
-from rest_framework.reverse import reverse
+from rest_framework import generics
 from rest_framework.views import APIView
+from django.http.response import HttpResponseRedirect
+from rest_framework.reverse import reverse, reverse_lazy
 from rest_framework.response import Response
-from rest_framework import status
 
 from .models import Pizza, Topping
-from .serializers import PizzaSerializer, ToppingsSerializer
+from .serializers import PizzaSerializer, ToppingsSerializer, VoteSerializer
 
 
-class API(APIView):
+class APIRootView(APIView):
     def get(self, request):
         return Response({
             'pizza': reverse("pizza:pizza-list", request=request),
@@ -16,98 +16,33 @@ class API(APIView):
         })
 
 
-class PizzaListView(APIView):
-    def get(self, request):
-        pizza = Pizza.objects.all()
-        serializer_context = {'request': request}
-        serializer = PizzaSerializer(pizza,
-                                     context=serializer_context,
-                                     many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer_context = {'request': request}
-        serializer = PizzaSerializer(data=request.data,
-                                     context=serializer_context)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class PizzaListView(generics.ListCreateAPIView):
+    queryset = Pizza.objects.all()
+    serializer_class = PizzaSerializer
 
 
-class PizzaDetailView(APIView):
-    def get(self, request, pk):
-        pizza = get_object_or_404(Pizza, pk=pk)
-        serializer_context = {'request': request}
-        serializer = PizzaSerializer(pizza, context=serializer_context)
-        return Response(serializer.data)
-
-    def patch(self, request, pk):
-        pizza = get_object_or_404(Pizza, pk=pk)
-        serializer_context = {'request': request}
-        serializer = PizzaSerializer(pizza,
-                                     data=request.data,
-                                     context=serializer_context,
-                                     partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        pizza = get_object_or_404(Pizza, pk=pk)
-        pizza.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+class PizzaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Pizza.objects.all()
+    serializer_class = PizzaSerializer
 
 
-class VoteDetailView(APIView):
-    def patch(self, request, pk):
-        pizza = get_object_or_404(Pizza, pk=pk)
+class VoteForPizzaView(generics.UpdateAPIView):
+    queryset = Pizza.objects.all()
+    serializer_class = VoteSerializer
+
+    def patch(self, request, *args, **kwargs):
+        pizza = self.get_object()
         pizza.votes += 1
         pizza.save()
-        serializer_context = {'request': request}
-        serializer = PizzaSerializer(pizza, context=serializer_context)
-        return Response(serializer.data)
+        return HttpResponseRedirect(reverse_lazy('pizza:pizza-detail',
+                                                 args=[pizza.id]))
 
 
-class ToppingsListView(APIView):
-    def get(self, request):
-        toppings = Topping.objects.all()
-        serializer_context = {'request': request}
-        serializer = ToppingsSerializer(toppings,
-                                        context=serializer_context,
-                                        many=True)
-        return Response(serializer.data)
-
-    def put(self, request):
-        serializer_context = {'request': request}
-        serializer = ToppingsSerializer(data=request.data,
-                                        context=serializer_context)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ToppingsListView(generics.ListCreateAPIView):
+    queryset = Topping.objects.all()
+    serializer_class = ToppingsSerializer
 
 
-class ToppingsDetailView(APIView):
-    def get(self, request, pk):
-        topping = get_object_or_404(Topping, pk=pk)
-        serializer_context = {'request': request}
-        serializer = ToppingsSerializer(topping, context=serializer_context)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        topping = get_object_or_404(Topping, pk=pk)
-        serializer_context = {'request': request}
-        serializer = ToppingsSerializer(topping,
-                                        data=request.data,
-                                        context=serializer_context)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        topping = get_object_or_404(Topping, pk=pk)
-        topping.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+class ToppingsDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Topping.objects.all()
+    serializer_class = ToppingsSerializer
