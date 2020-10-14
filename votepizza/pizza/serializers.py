@@ -49,9 +49,8 @@ class PizzaSerializer(serializers.ModelSerializer):
                 raise ValidationError("Topping should have id")
             if not Topping.objects.filter(id=topping['id']).exists():
                 raise ValidationError("No such topping")
-
             if len(topping.keys()) > 1:
-                toppings[counter] = dict(name=topping.get('id'))
+                toppings[counter] = dict(id=topping.get('id'))
         return toppings
 
     @transaction.atomic
